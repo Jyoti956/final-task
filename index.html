@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UserInputs</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+            integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" 
+            crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" href="food.css">
+</head>
+<body style="background-image: url('pic3.jpg'); opacity: .8; background-size: cover;">
+        <div class="searchBar">
+        <input type="text" id="search" placeholder="Search here....">
+        <button id="searchBtn">Search</button>
+        </div>
+        <div class="main1">
+                <header id="header1">
+                    <h2>Add Your Dish Here</h2>
+                </header>
+                
+                <div class="input_fields">
+                    <label for="dname">Dish Name:</label>
+                    <input type="text" name="dishname" id="dname">
+                </div><br>
+
+                <div class="input_fields">
+                    <label for="image">Image URL:</label>
+                    <input type="text" name="image" id="imgurl">
+                </div>
+
+                <div class="input_fields">
+                    <label for="dsteps">Add Recipe:</label>
+                    <textarea name="steps" id="dsteps"></textarea>
+                </div>
+
+                <div class="ing">
+                    <label for="ingridients">Ingredients:</label>
+                    <input type="text" name="iname" placeholder="Name" id="iname">
+                    <input type="number" name="qty" placeholder="Quantity" min="1" id="qty">
+                    <select id="unit">
+                        <option>Measurement-Units:</option>
+                        <option value="gram">gram</option>
+                        <option value="Kilogram">Kilogram</option>
+                        <option value="Litre">Litre</option>
+                        <option value="Millilitre">Millilitre</option>
+                        <option value="Teaspoon">Teaspoon</option>
+                        <option value="Tablespoon">Tablespoon</option>
+                    </select>
+                </div><br><br>
+            
+                <div id="btndiv">
+                    <button id="dishAddBtn">ADD-Dish</button>
+                    <button id="dishUpdateBtn">Update-Dish</button>
+                    <button id="showBtn">Record</button>
+                </div>
+            
+        </div>
+
+        <div class="main2">
+            <header id="header2">
+                <h2>Ingredients</h2>
+            </header>
+        
+            <div class="ing">
+                <input type="text" name="iname" placeholder="Name" id="iname2"><br>
+                <input type="number" name="qty" placeholder="Quantity" min="1" id="qty2"><br><br>
+                <select id="unit2">
+                    <option selected>Measurement-Units:</option>
+                    <option value="gram">gram</option>
+                    <option value="Kilogram">Kilogram</option>
+                    <option value="Litre">Litre</option>
+                    <option value="Millilitre">Millilitre</option>
+                    <option value="Teaspoon">Teaspoon</option>
+                    <option value="Tablespoon">Tablespoon</option>
+                </select>
+            </div><br><br>
+            
+                <button id="ingBtn">ADD-Ingredient</button>
+                <button id="ingUpdateBtn">UPDATE</button>
+        </div><br><br><br>
+            
+        <table id="dishDetails">
+            <thead>
+                <tr>
+                    <th>Dish Name</th>
+                    <th>Image URL</th>
+                    <th>Dish Recipe</th>
+                    <th rowspan="2">Ingredients List</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        
+<script>
+           
+           $(document).ready(function(){
+            $(".main2").hide();
+            $("#dishDetails").hide();
+            var Dishes=[];
+            var Ingre = [];
+            //Add the Dish
+            $("#dishAddBtn").click(function(event){
+            event.preventDefault();
+            var Name =$("#dname").val();
+            var Image = $("#imgurl").val();
+            var Recipe= $("#dsteps").val();
+            var IngName=$("#iname").val();
+            var IngQty=$("#qty").val();
+            var IngUnit=$("#unit").children("option:selected").val();
+            if(Name!=="" && Image!=="" && Recipe!=="" && IngName!=="" && IngQty!=="" && IngUnit!==""){
+            $("#dishDetails tbody").empty();     
+            Ingre.push({IngName,IngQty,IngUnit});         
+            Dishes.push({Name,Image,Recipe,Ingre});
+            console.log(Dishes);
+            localStorage.setItem('Dishes',JSON.stringify(Dishes));
+            readData();
+            $("#dishDetails").show();
+            doEmpty();
+            }
+            else{
+                validation();
+            }
+            });
+            
+            //Display the Record table
+            $("#showBtn").on("click", function(){
+            var prevData=localStorage.getItem('Dishes');
+            if(prevData!= null)
+            {
+            Dishes =JSON.parse(localStorage.getItem("prevData"));
+            $(".main1").show();
+            readData();
+            $("#dishDetails").show();
+            }else
+            {
+                alert("There is no previous Record");
+            }
+            });
+
+            //Remove the Dish
+            $("#dishDetails").on("click", "#dishRemoveBtn", function(){
+                var i=$(this).parents("tr").index();
+                Dishes.splice(i,1);
+                $(this).parents("tr").remove();
+            });
+
+            //Edit the Dish
+            var i;
+            $("#dishDetails").on("click", "#dishEditBtn", function(){
+            i=$(this).parents("tr").index();
+            console.log(i);
+            $("#dname").val(Dishes[i].Name);
+            $("#imgurl").val(Dishes[i].Image);
+            $("#dsteps").val(Dishes[i].Recipe);
+            $("#iname").val('');
+            $("#qty").val('');
+            $("#unit").children("option:selected").val('');
+            });
+
+            //Update the Dish
+            $("#dishUpdateBtn").on("click", function(){
+            var newDish  = $("#dname").val();
+            var newImage  = $("#imgurl").val();
+	        var newSteps  = $("#dsteps").val();
+	        
+	        Dishes[i].Name = newDish;
+	        Dishes[i].Image = newImage;
+	        Dishes[i].Recipe = newSteps;
+	        localStorage.setItem("Dishes",JSON.stringify(Dishes));
+            readData();
+            $("#dname").val('');
+            $("#imgurl").val('');
+            $("#dsteps").val('');
+            });   
+
+            //More-Ingredients button 
+            var i;
+            var j;
+            $("#dishDetails").on("click", ".moreIngBtn", function(){
+            i=$(this).parents("tr").index();
+            j= Dishes[i].Ingre.length;
+            console.log(j);
+            $(".main1").hide();
+            $("#dishDetails").hide();
+            $(".main2").show();
+            $(".searchBar").hide();
+                
+            });
+
+            //Add next Ingredient to the dish
+            $("#ingBtn").click(function(){
+            
+	        var newIngName = $("#iname2").val();
+	        var newIngQty = $("#qty2").val();
+            var newIngUnit = $("#unit2").val();	
+            var newelement ={"IngName" : newIngName ,"IngQty" :newIngQty ,"IngUnit" : newIngUnit};
+		    Dishes[i].Ingre[j] = newelement ;
+            localStorage.setItem("Dishes",JSON.stringify(Dishes));
+            readData();
+            $(".main1").show();
+            $("#dishDetails").show();
+            $(".main2").hide();
+            $(".searchBar").show();
+
+            $("#iname2").val('');
+            $("#qty2").val('');
+            $("#unit2").val('');
+            });
+            
+            //Remove the Ingredient
+            $("#dishDetails").on("click","#ingRemoveBtn", function(){
+            var i= $(this).parents("tr").parents("tr").index();
+            var j= $(this).parents("tr").index();
+            Dishes[i].Ingre.splice(j,1);
+            localStorage.setItem("Dishes",JSON.stringify(Dishes));
+            readData();
+            });
+
+            //Edit the Ingredients
+            var i,j;
+            $("#dishDetails").on("click", "#ingEditBtn", function(){
+            i= $(this).parents("tr").parents("tr").index();
+            console.log(i);
+            j= $(this).parents("tr").index();
+            console.log(j);
+	        $("#iname2").val(Dishes[i].Ingre[j].IngName);
+	        $("#qty2").val(Dishes[i].Ingre[j].IngQty);
+            $("#unit2").val(Dishes[i].Ingre[j].IngUnit);
+            $(".main1").hide();
+            $("#dishDetails").hide();
+            $(".main2").show();
+            });
+
+            //update Ingredients
+            $("#ingUpdateBtn").on("click", function(){
+	        var upIngName = $("#iname2").val();
+	        var upIgQty = $("#qty2").val();
+	        var upIngUnit = $("#unit2").val();
+	        Dishes[i].Ingre[j].IngName = upIngName;
+	        Dishes[i].Ingre[j].IngQty= upIgQty;
+	        Dishes[i].Ingre[j].IngUnit = upIngUnit;
+	        localStorage.setItem("Dishes", JSON.stringify(Dishes));
+            readData();
+            $(".main1").show();
+            $("#dishDetails").show();
+            $(".main2").hide();
+            });
+
+            $("#searchBtn").on("click",function(){
+                var data=$("#search").val();
+                $("#dishDetails tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(data) > -1)
+            });
+            $("#search").val('');
+            });
+        
+
+    function readData(){
+    var mydishes = JSON.parse(localStorage.getItem("Dishes"));
+    var Dbtn=`<button id="dishRemoveBtn">REMOVE-Dish</button>
+              <button id="dishEditBtn">EDIT-Dish</button>
+              <button class="moreIngBtn">More-Ingredients</button>`;
+    var Ibtn=`<button id="ingRemoveBtn">REMOVE</button>
+              <button id="ingEditBtn">EDIT</button>`;
+    var dishRow="";
+            $.each(mydishes,function(n){
+                dishRow+=`<tr>
+                               <td>${mydishes[n].Name}</td>
+                               <td>${mydishes[n].Image}</td>
+                               <td>${mydishes[n].Recipe}</td>
+                               <td>
+                                   <table id="tab2">
+                                          <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Quantity</th>
+                                                <th>Units</th>
+                                                <th colspan="2">Actions</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>`
+                for(var m=0; m<mydishes[n].Ingre.length; m++){
+                    dishRow+=`<tr>
+                                    <td>${mydishes[n].Ingre[m].IngName}</td>
+                                    <td>${mydishes[n].Ingre[m].IngQty}</td>
+                                    <td>${mydishes[n].Ingre[m].IngUnit}</td>
+                                    <td>${Ibtn}</td>
+                                      </tr>`
+                                    }
+                    dishRow+=`</tbody>
+                                   </table>
+                               </td>
+                               <td>${Dbtn}</td>
+                               </tr>`
+                            });
+                            $("#dishDetails tbody").html(dishRow);
+                            Ingre=[];
+            }
+
+    function validation(){
+        var dName =$("#dname").val();
+        var dImage =$("#imgurl").val();
+        var dRecipe= $("#dsteps").val();
+        var dIngName=$("#iname").val();
+        var dIngQty=$("#qty").val();
+        var dIngUnit=$("#unit").children("option:selected").val();
+        
+        if(dName=="")
+            {
+            alert("Please enter the Name of the Dish");
+            return false;
+            }
+        if(dImage=="")
+            {
+            alert("Please enter the URL of the Image of the Dish");
+            return false;
+            }
+        if(dRecipe=="")
+            {
+            alert("Please write the Recipe of the Dish");
+            return false;
+            }
+        if(dIngName=="")
+            {
+            alert("You have to select atleast one Ingredient");
+            return false;
+            }
+        if(dIngQty=="")
+            {
+            alert("Please enter the Quantity of the Ingredient");
+            return false;
+            }
+        if(dIngUnit=="")
+            {
+            alert("Please enter the Unit of the Ingredient");
+            return false;
+            }
+        
+            else{
+                return true;
+                }
+        }
+});
+    function doEmpty(){                     
+        $("#dname").val('');
+        $("#imgurl").val('');
+        $("#dsteps").val('');
+        $("#iname").val('');
+        $("#qty").val('');
+        $("#unit").val('');
+    } 
+    
+    </script>
+</body>
+
+</html>
